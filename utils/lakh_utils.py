@@ -4,13 +4,20 @@ and
 https://github.com/PacktPublishing/hands-on-music-generation-with-magenta"""
 
 import json
+import logging
 from pathlib import Path
 from typing import Dict
 
+import config.config as cnfg
+
+cnfg.set_up_logging_basic_config()
+logger = logging.getLogger(__name__)
+
+constants = cnfg.get_constants_dict()
 # Local path constants
-DATA_PATH = Path(__file__).parent.parent.absolute() / 'data'
+DATA_PATH = constants["DATA_PATH"]
 # Path to the file match_scores.json distributed with the LMD
-MATCH_SCORE_FILE = DATA_PATH / 'LMD-match_scores.json'
+MATCH_SCORE_FILE = constants["MATCH_SCORE_FILE"]
 
 
 # Utility functions for retrieving paths
