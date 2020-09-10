@@ -1,4 +1,5 @@
 import json
+import logging
 from pathlib import Path
 
 
@@ -33,6 +34,12 @@ def set_up_constants():
 
     with (Path(__file__).parent.absolute() / "constants.json").open('w') as f:
         return json.dump(constants, f)
+
+
+def set_up_logging_basic_config():
+    logging.basicConfig(filename='D:\\plum_music\\logs\\plum_main.log',
+                        format="%(name): s%(levelname)s %(asctime)s\n\t%(messages)",
+                        datefmt='%Y-%m-%d %H:%M')
 
 
 def get_constants_dict() -> dict:
