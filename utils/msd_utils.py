@@ -3,7 +3,7 @@ Utility functions to work with Million Song Dataset records stored in data/lmd_m
 All functions work on a given table.File to access the data and assume only one song per file.
 """
 import logging
-from typing import List
+from typing import List, Optional
 
 import tables
 
@@ -33,9 +33,13 @@ def get_artist_terms(h5: tables.File) -> List[str]:
     return [term.decode() for term in h5.root.metadata.artist_terms]
 
 
-def get_musicbrainz_artist_tags(h5: tables.File) -> str:
-    return h5.root.musicbrainz.artist_mbtags[0].decode()
+def get_musicbrainz_artist_tags(h5: tables.File) -> Optional[str]:
+    return h5.root.musicbrainz.artist_mbtags[0].decode() \
+        if h5.root.musicbrainz.artist_mbtags \
+        else None
 
 
-def get_musicbrainz_artist_tags_count(h5: tables.File) -> int:
-    return int(h5.root.musicbrainz.artist_mbtags_count[0])
+def get_musicbrainz_artist_tags_count(h5: tables.File) -> Optional[int]:
+    return int(h5.root.musicbrainz.artist_mbtags_count[0]) \
+        if h5.root.musicbrainz.artist_mbtags_count \
+        else None
