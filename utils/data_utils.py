@@ -2,19 +2,23 @@
 Utility functions to work with data in the data directory.
 """
 
+import asyncio
+import time
+
+from aiohttp import ClientSession
 import csv
 import json
-import logging
-import tables
-from multiprocessing import Manager, Process
 from pathlib import Path
+from pprint import pprint
 
 import pandas as pd
 
 import config.config as cnfg
 from utils.lakh_utils import get_msd_score_matches, get_matched_midi_md5
+from utils.lastfm_utils import get_lastfm_top_genre_tags, create_lastfm_top_tags_request
 from utils.msd_utils import *
 
+cnfg.set_up_logging_basic_config()
 logger = logging.getLogger(__name__)
 
 
@@ -107,13 +111,18 @@ def make_top_lastfm_genre_json(verbose=0):
     genre_dict = dict()
     for i, row in df.iterrows():
         if verbose:
-            print(f'Fetching tops tags for:\n\t{row["artist"]} - {row["track"]}')
+            print(f'Fetching top tags for:\n\t{row["artist"]} - {row["track"]}')
 
         # TODO
         '''handle
         raise JSONDecodeError("Expecting value", s, err.value) from None
         json.decoder.JSONDecodeError: Expecting value: line 1 column 1(char 0)'''
-        genre = get_lastfm_top_genre_tags(artist=row["artist"], title=row["track"], ignore_not_found=True)
+        genre = []
+        try:
+            genre = get_lastfm_top_genre_tags(artist=row["artist"], title=row["track"], ignore_not_found=True)
+        except Exception as ex:
+            print(ex)
+
         if genre:
             genre_dict[row["msdID"]] = genre[0]
             if verbose:
@@ -128,11 +137,73 @@ def make_top_lastfm_genre_json(verbose=0):
     return genre_json_path
 
 
-def _add_genre_dict_entry(genre_dict: dict, row):
+def make_top_lastfm_genre_json_parallel(verbose=0):
+    """
+    Make a json file with containing the top genre for each MSD ID,
+    fetched from the last.FM API's track.getTopTags method.
+    WARNING: This function uses the lmd_metadata.csv file created with _make_csv_database
+    for faster computation. Make sure to have the file created, otherwise a FileNotFoundError is thrown.
+    :param verbose Whether to print execution information or not (default=0).
+    :return: A Path object showing the location the json file is stored
+    """
+    constants = cnfg.get_constants_dict()
+    df = pd.read_csv(constants["LMD_METADATA_CSV_FILE"])
+
+    lastfm_requests = []
+    msd_ids = []
+    for _, row in df.iterrows():
+        lastfm_requests.append(create_lastfm_top_tags_request(artist=row["artist"], title=row["track"]))
+        msd_ids.append(row["msdID"])
+
+    loop = asyncio.get_event_loop()
+    future = asyncio.ensure_future(_get_genres(lastfm_requests))
+    start = time.time()
+    genres = loop.run_until_complete(future)
+    stop = time.time()
+    print(f"Took {stop - start} seconds to process {len(lastfm_requests)} requests in asynchronously.")
+    pprint(genres[0:10])
+
+    genre_json_path = constants["LASTFM_GENRE_MSDID_MATCHED_JSON"]
+    genre_dict = {
+        msd_id: genre
+        for msd_id, genre in zip(msd_ids, genres)
+    }
+    with open(genre_json_path, 'w') as f:
+        json.dump(genre_dict, f)
+
+    return genre_json_path
+
+
+async def _get_genres(lastfm_requests):
     """
     SIDE EFFECTS: Add an entry to the given genre dictionary.
     :param genre_dict:
-    :param row:
     :return:
     """
-    genre_dict[row["msdID"]] = get_lastfm_top_genre_tags(artist=row["artist"], title=row["track"])
+    async with ClientSession() as session:
+        tasks = []
+        for req in lastfm_requests:
+            tasks.append(
+                asyncio.ensure_future(_fetch_genre(req, session=session))
+            )
+
+        genres = await asyncio.gather(*tasks)
+        return genres
+        '''tags = [
+            {
+                "name": tag["name"].lower.strip(),
+                "count": tag["count"]
+            }
+            for track in genres
+            for tag in track["toptags"]["tag"]
+            if tag["name"]
+        ]
+        return tags'''
+
+
+async def _fetch_genre(lastfm_request: str, session: ClientSession):
+    try:
+        async with session.get(lastfm_request) as response:
+            return await response.json()
+    except Exception as ex:
+        print("Oh well, bollocks...", ex)
