@@ -40,7 +40,7 @@ def get_num_matched_songs():
     return len(list(h5_dir.rglob('TR*.h5')))
 
 
-def _make_csv_database(verbose=0):
+def make_metadata_csv(verbose=0):
     """
     Make a csv database table with meta information about all the available songs in the LMD matched dataset.
     :param verbose Whether to print execution information or not (default=0).
@@ -64,7 +64,9 @@ def _make_csv_database(verbose=0):
             'artist',
             'track',
             'album',
-            'genre']
+            'mb_genre',
+            'mb_genre_count'
+        ]
         writer.writerow(fieldnames)
         for h5_path in all_h5_files:
             h5 = tables.open_file(str(h5_path))
@@ -76,7 +78,8 @@ def _make_csv_database(verbose=0):
                 get_artist(h5),
                 get_title(h5),
                 get_album(h5),
-                get_genre(h5)
+                get_musicbrainz_artist_tags(h5),
+                get_musicbrainz_artist_tags_count(h5)
             ]
             writer.writerow(row)
 
@@ -141,6 +144,9 @@ def make_top_lastfm_genre_json_parallel(verbose=0):
     """
     Make a json file with containing the top genre for each MSD ID,
     fetched from the last.FM API's track.getTopTags method.
+    Uses asyncio and aiohttp to process requests asynchronously and speed up computation.
+    Adapted from
+    https://pawelmhm.github.io/asyncio/python/aiohttp/2016/04/22/asyncio-aiohttp.html.
     WARNING: This function uses the lmd_metadata.csv file created with _make_csv_database
     for faster computation. Make sure to have the file created, otherwise a FileNotFoundError is thrown.
     :param verbose Whether to print execution information or not (default=0).
