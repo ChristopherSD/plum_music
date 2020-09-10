@@ -15,9 +15,9 @@ logger = logging.getLogger(__name__)
 
 constants = cnfg.get_constants_dict()
 # Local path constants
-DATA_PATH = constants["DATA_PATH"]
+DATA_PATH = Path(constants["DATA_PATH"])
 # Path to the file match_scores.json distributed with the LMD
-MATCH_SCORE_FILE = constants["MATCH_SCORE_FILE"]
+MATCH_SCORE_FILE = Path(constants["MATCH_SCORE_FILE"])
 
 
 # Utility functions for retrieving paths
