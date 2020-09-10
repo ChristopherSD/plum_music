@@ -1,9 +1,8 @@
 import json
 import unittest
-import tables
 from pathlib import Path
-from random import randint
 
+from utils.lastfm_utils import get_lastfm_top_genre_tags
 from utils.msd_utils import *
 
 DATA_PATH = Path(__file__).parent.parent.absolute() / 'data'
