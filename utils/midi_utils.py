@@ -1,8 +1,6 @@
 """Most code was taken from Colin Raffle on
 https://nbviewer.jupyter.org/github/craffel/midi-ground-truth/blob/master/Statistics.ipynb"""
 
-import joblib
-
 import pretty_midi
 
 def compute_statistics(midi_file):
