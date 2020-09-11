@@ -54,7 +54,8 @@ def make_metadata_csv(verbose=0):
     metadata_csv = Path(constants["DATA_PATH"], "lmd_metadata.csv")
     logger.debug(f"Metadata csv filepath is: {str(metadata_csv)}")
 
-    with metadata_csv.open('w') as f:
+    with metadata_csv.open('w', encoding='utf-8') as f:
+        start = time.time()
         writer = csv.writer(f)
 
         matches = get_msd_score_matches()
@@ -88,7 +89,9 @@ def make_metadata_csv(verbose=0):
             if verbose:
                 print(f"Wrote row:\n\t{row}")
 
-    logger.info(f"Created file {metadata_csv.name}")
+    if verbose:
+        print(f"Created file {metadata_csv.name} in {time.time() - start} seconds.")
+    logger.info(f"Created file {metadata_csv.name} in {time.time() - start} seconds.")
     return metadata_csv
 
 
