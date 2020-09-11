@@ -3,18 +3,18 @@ Utility functions to work with data in the data directory.
 """
 
 import asyncio
-import time
-
-from aiohttp import ClientSession
 import csv
 import json
+import time
 from pathlib import Path
 from pprint import pprint
+from typing import Tuple
 
 import pandas as pd
+from aiohttp import ClientSession
 
 import config.config as cnfg
-from utils.lakh_utils import get_msd_score_matches, get_matched_midi_md5
+from utils.lakh_utils import get_msd_score_matches, get_matched_midi_md5, get_midi_path
 from utils.lastfm_utils import get_lastfm_top_genre_tags, create_lastfm_top_tags_request
 from utils.msd_utils import *
 
@@ -22,12 +22,29 @@ cnfg.set_up_logging_basic_config()
 logger = logging.getLogger(__name__)
 
 
-def get_all_artists_count():
+def get_random_song_from_genre(genre: str) -> Tuple[str, Path]:
     """
-    Counts all unique artist names in the LMD matched dataset.
-    :return: A Counter of for each unqiue artist name.
+    Choose a random song from the given genre.
+    :param genre: A string describing the genre from which to choose the song from. Must be a genre exisiting in the
+     musicbrainz tag attribute in the h5 files of the LMD.
+    :return: A tuple containing the MSD ID (index 0) and the Path to the MIDI file (index 1) of the chosen song.
     """
-    pass
+    constants = cnfg.get_constants_dict()
+    metadata = pd.read_csv(constants["LMD_METADATA_CSV_FILE"])
+
+    metadata_chosen_genre = metadata[metadata["mb_genre"] == genre]
+    if metadata_chosen_genre.empty:
+        logger.error(f"The given genre '{genre}' does not exist in the Lakh MIDI databse.")
+        raise ValueError(f"The given genre '{genre}' does not exist in the Lakh MIDI databse.")
+
+    sample = metadata_chosen_genre.sample(n=1).reset_index(drop=True)
+    print(sample)
+    msd_id = sample.loc[0, "msdID"]
+
+    return msd_id, get_midi_path(
+        msd_id,
+        sample.loc[0, "md5"]
+    )
 
 
 def get_num_matched_songs():
