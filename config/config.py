@@ -37,9 +37,11 @@ def set_up_constants():
 
 
 def set_up_logging_basic_config():
-    logging.basicConfig(filename='D:\\plum_music\\logs\\plum_main.log',
-                        format="%(name): s%(levelname)s %(asctime)s\n\t%(messages)",
-                        datefmt='%Y-%m-%d %H:%M')
+    constants = get_constants_dict()
+    logging.basicConfig(filename=str(Path(constants["LOG_DIR"], 'plum_main.log')),
+                        format="%(name)s: %(levelname)s %(asctime)s\n\t%(messages)s",
+                        datefmt='%Y-%m-%d %H:%M',
+                        filemode='w')
 
 
 def get_constants_dict() -> dict:
