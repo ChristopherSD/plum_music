@@ -1,4 +1,7 @@
 aiohttp
+magenta
+note-seq
 pandas
 pytables
 requests
+tensorflow>2
