@@ -2,6 +2,11 @@ import json
 import logging
 from pathlib import Path
 
+PROJECT_PATH = Path(__file__).parent.parent.absolute()
+DATA_PATH = PROJECT_PATH / 'data'
+TEST_PATH = PROJECT_PATH / 'tests'
+MODELS_PATH = PROJECT_PATH / "models"
+
 
 def set_up():
     """
@@ -14,15 +19,21 @@ def set_up_constants():
     """
     Create the constants.json file according to your file system.
     """
-    PROJECT_PATH = Path(__file__).parent.parent.absolute()
-    DATA_PATH = PROJECT_PATH / 'data'
-    TEST_PATH = PROJECT_PATH / 'tests'
 
     constants = {
         "DATA_PATH": str(DATA_PATH),
         "TEST_PATH": str(TEST_PATH),
+        "MODELS_PATH": str(MODELS_PATH),
+
         "TEST_DATA_PATH": str(TEST_PATH / 'testdata'),
         "LOG_DIR": str(PROJECT_PATH / 'logs'),
+        "MODELS_MUSICVAE_PATH": str(MODELS_PATH / "musicVAE"),
+
+        "CHECKPOINT_MUSICVAE_CAT_MEL": "cat-mel_2bar_big",
+        "CHECKPOINT_MUSICVAE_HIERDEC_TRIO": "hierdec-trio_16bar",
+        "CHECKPOINT_MUSICVAE_HIERDEC_MEL": "hierdec-mel_16bar",
+        "CHECKPOINT_MUSICVAE_CAT_DRUMS_HIKL": "cat-drums_2bar_small.hikl",
+
         "FULL_FILENAMES_PATH": str(DATA_PATH / 'LMD-full_filenames.json'),
         "MATCH_SCORE_FILE": str(DATA_PATH / 'LMD-match_scores.json'),
         "LASTFM_GENRE_MSDID_MATCHED_JSON": str(DATA_PATH / 'LASTFM_GENRE_MSDID_MATCHED.json'),
