@@ -13,6 +13,7 @@ def set_up():
     Runs all functions necessary to set up the configuration files.
     """
     set_up_constants()
+    set_up_dir_structure()
 
 
 def set_up_constants():
@@ -34,6 +35,8 @@ def set_up_constants():
         "CHECKPOINT_MUSICVAE_HIERDEC_MEL": "hierdec-mel_16bar",
         "CHECKPOINT_MUSICVAE_CAT_DRUMS_HIKL": "cat-drums_2bar_small.hikl",
 
+        "CLEANED_DATA_PATH": str(DATA_PATH / 'cleaned'),
+
         "FULL_FILENAMES_PATH": str(DATA_PATH / 'LMD-full_filenames.json'),
         "MATCH_SCORE_FILE": str(DATA_PATH / 'LMD-match_scores.json'),
         "LASTFM_GENRE_MSDID_MATCHED_JSON": str(DATA_PATH / 'LASTFM_GENRE_MSDID_MATCHED.json'),
@@ -45,6 +48,19 @@ def set_up_constants():
 
     with (Path(__file__).parent.absolute() / "constants.json").open('w') as f:
         return json.dump(constants, f)
+
+
+def set_up_dir_structure():
+    """
+    Sets up the directory structure as referenced in the constants dict, by creating all directories that do not exist
+    yet. Does not create files!
+    """
+    constants = get_constants_dict()
+    for key, value in constants.items():
+        if "PATH" in key or "DIR" in key:
+            path = Path(constants[key])
+            if not path.suffix and not path.exists():
+                path.mkdir(parents=True)
 
 
 def set_up_logging_basic_config():
