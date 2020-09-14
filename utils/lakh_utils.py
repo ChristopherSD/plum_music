@@ -6,7 +6,7 @@ https://github.com/PacktPublishing/hands-on-music-generation-with-magenta"""
 import json
 import logging
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union, List
 
 import config.config as cnfg
 
@@ -48,7 +48,7 @@ def get_msd_score_matches(match_scores_path: Path = MATCH_SCORE_FILE) -> Dict:
         return json.load(f)
 
 
-def get_matched_midi_md5(msd_id: str, msd_score_matches: dict, max_matched=True):
+def get_matched_midi_md5(msd_id: str, msd_score_matches: dict, max_matched=True) -> Union[str, List[str]]:
     """
     Returns the MD5 of the MIDI with the highest match from its MSD id.
     :param msd_id: the MSD id
