@@ -1,7 +1,8 @@
 aiohttp
-magenta
-note-seq
+magenta>=2.1
+note_seq
 pandas
-pytables
+pretty_midi
+pytable
 requests
-tensorflow>2
+tensorflow>=2.3.0
