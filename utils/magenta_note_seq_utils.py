@@ -29,6 +29,7 @@ def get_sec_for_num_bars(note_seq: ns.NoteSequence, n_bars=2) -> float:
     # quarter per minutes divided by 60 seconds (a minute)
     quarter_per_second = note_seq.tempos[0].qpm / 60
     # duration of one bar
-    bar = note_seq.time_signatures[0].numerator * quarter_per_second
+    # bar = note_seq.time_signatures[0].numerator * quarter_per_second
+    bar = 4 * quarter_per_second
     # duration of the given number of bars
     return bar * n_bars
