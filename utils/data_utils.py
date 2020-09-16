@@ -38,13 +38,41 @@ def get_random_song_from_genre(genre: str) -> Tuple[str, Path]:
         raise ValueError(f"The given genre '{genre}' does not exist in the Lakh MIDI databse.")
 
     sample = metadata_chosen_genre.sample(n=1).reset_index(drop=True)
-    print(sample)
+    logger.info(
+        f"Selected random sample from genre '{genre}':\n"
+        f"{sample}"
+    )
     msd_id = sample.loc[0, "msdID"]
 
     return msd_id, get_midi_path(
         msd_id,
         sample.loc[0, "md5"]
     )
+
+
+def get_all_songs_from_genre(genre: str) -> List[Tuple[str, Path]]:
+    """
+    Select all songs from the given genre.
+    :param genre: A string describing the genre from which to choose the song from. Must be a genre exisiting in the
+     musicbrainz tag attribute in the h5 files of the LMD.
+    :return: A list of tuples containing the MSD ID (index 0) and
+    the Path to the MIDI file (index 1) of the chosen song.
+    """
+    constants = cnfg.get_constants_dict()
+    metadata = pd.read_csv(constants["LMD_METADATA_CSV_FILE"])
+
+    metadata_chosen_genre = metadata[metadata["mb_genre"] == genre]
+    if metadata_chosen_genre.empty:
+        logger.error(f"The given genre '{genre}' does not exist in the Lakh MIDI databse.")
+        raise ValueError(f"The given genre '{genre}' does not exist in the Lakh MIDI databse.")
+
+    msd_ids = metadata_chosen_genre.loc[:, "msdID"]
+    md5s = metadata_chosen_genre.loc[:, "md5"]
+
+    return [
+        (msd_id, get_midi_path(msd_id, md5))
+        for msd_id, md5 in zip(msd_ids, md5s)
+    ]
 
 
 def get_num_matched_songs():
