@@ -94,7 +94,6 @@ def get_latent_encoding_for_genre_split(genre: str, model_name: str, n_bars: int
                 else:
                     encodings.append(z)
                     num_successful += 1
-                    not
 
     print(exceptions)
 
