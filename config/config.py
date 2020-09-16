@@ -34,6 +34,10 @@ def set_up_constants():
         "CHECKPOINT_MUSICVAE_HIERDEC_TRIO": "hierdec-trio_16bar",
         "CHECKPOINT_MUSICVAE_HIERDEC_MEL": "hierdec-mel_16bar",
         "CHECKPOINT_MUSICVAE_CAT_DRUMS_HIKL": "cat-drums_2bar_small.hikl",
+        "CHECKPOINT_MUSICVAE_MULTITRACK": "model_fb256.ckpt",
+        "CHECKPOINT_MUSICVAE_MULTITRACK_CONDITIONED": "model_chords_fb64.ckpt",
+        "NAME_MUSICVAE_MULTITRACK": "hier-multiperf_vel_1bar_med",
+        "NAME_MUSICVAE_MULTITRACK_CONDITIONED": "hier-multiperf_vel_1bar_med_chords",
 
         "CLEANED_DATA_PATH": str(DATA_PATH / 'cleaned'),
 
