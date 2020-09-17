@@ -8,7 +8,7 @@ import json
 import time
 from pathlib import Path
 from pprint import pprint
-from typing import Tuple
+from typing import Tuple, Dict
 
 import pandas as pd
 from aiohttp import ClientSession
@@ -73,6 +73,24 @@ def get_all_songs_from_genre(genre: str) -> List[Tuple[str, Path]]:
         (msd_id, get_midi_path(msd_id, md5))
         for msd_id, md5 in zip(msd_ids, md5s)
     ]
+
+
+def get_all_songs_from_genres_of_size(n: int = 90) -> Dict[str, List[Tuple[str, Path]]]:
+    """
+    Select all songs from all genres that exist at least n times in the dataset.
+    :param n: The number a genre must appear in the dataset to be considered in the output.
+    :return: A  dictionary with the genre name as key and a list of tuples containing the MSD ID (index 0) and
+    the Path to the MIDI file (index 1) of the chosen song as values.
+    """
+    constants = cnfg.get_constants_dict()
+    metadata = pd.read_csv(constants["LMD_METADATA_CSV_FILE"])
+    all_genres = metadata.groupby("mb_genre").nunique()
+    genres = all_genres[all_genres.msdID >= n].index.to_list()
+
+    return {
+        genre: get_all_songs_from_genre(genre)
+        for genre in genres
+    }
 
 
 def get_num_matched_songs():
