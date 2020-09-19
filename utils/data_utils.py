@@ -22,6 +22,11 @@ cnfg.set_up_logging_basic_config()
 logger = logging.getLogger(__name__)
 
 
+def get_metadata_dataframe() -> pd.DataFrame:
+    constants = cnfg.get_constants_dict()
+    return pd.read_csv(constants["LMD_METADATA_CSV_FILE"])
+
+
 def get_random_song_from_genre(genre: str) -> Tuple[str, Path]:
     """
     Choose a random song from the given genre.
