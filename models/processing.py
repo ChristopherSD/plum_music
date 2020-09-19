@@ -5,8 +5,9 @@ from typing import List
 
 import models.preprocessing as pre
 from config.config import get_constants_dict
-from utils.data_utils import get_all_songs_from_genre, get_all_songs_from_genres_of_size
+from utils.data_utils import get_all_songs_from_genre, get_all_songs_from_genres_of_size, get_metadata_dataframe
 from utils.magenta_models_utils import get_model
+from utils.lakh_utils import get_midi_path
 
 import numpy as np
 import pandas as pd
@@ -301,3 +302,61 @@ def get_encodings_for_genres(model_name: str):
     )
 
     return genres, encodings, msd_ids
+
+
+def get_all_tracks_for_multitrack():
+    meta = get_metadata_dataframe()
+
+    valid_tracks = {}
+    num_processed = 0
+    for msd_id, md5 in zip(meta.msdID, meta.md5):
+        try:
+            seq = ns.midi_file_to_note_sequence(
+                get_midi_path(msd_id, md5)
+            )
+        except Exception as e:
+            pass
+        else:
+            if _is_multitrack_valid(seq):
+                valid_tracks[msd_id] = md5
+                print(f"Found a valid!!!!\n\tMSD ID: {msd_id}")
+
+        num_processed += 1
+        if num_processed % 50 == 0:
+            print(f"Processed {num_processed} out of {len(meta.index)} files")
+
+    return valid_tracks
+
+
+def _is_multitrack_valid(seq: ns.NoteSequence) -> bool:
+    """
+    Check whether the given note sequence is valid for the multitrack model as described in google's paper:
+    https://arxiv.org/pdf/1806.00195.pdf
+    :param seq: The note sequence to check
+    :return: True, if it is a valid sequence, false otherwise
+    """
+    # only one time signature in 4/4
+    if (seq.time_signatures and len(seq.time_signatures) == 1) \
+            and not \
+            (seq.time_signatures[0].numerator == 4 and seq.time_signatures[0].denominator == 4):
+        return False
+
+    # number of tracks min 2 and max 8
+    pm = ns.sequence_proto_to_pretty_midi(seq)
+    if pm.instruments and not (2 <= len(pm.instruments) <= 8):
+        return False
+
+    # max 64 events per track
+    for inst in pm.instruments:
+        num_events = 0
+        if inst.notes:
+            num_events += len(inst.notes)
+        if inst.pitch_bends:
+            num_events += len(inst.pitch_bends)
+        if inst.control_changes:
+            num_events += len(inst.control_changes)
+
+        if num_events > 64:
+            return False
+
+    return True
