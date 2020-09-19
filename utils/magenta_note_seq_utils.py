@@ -26,10 +26,21 @@ def get_sec_for_num_bars(note_seq: ns.NoteSequence, n_bars=2) -> float:
     :return: The duration of the given number of bars of the sequence in seconds.
     """
 
-    # quarter per minutes divided by 60 seconds (a minute)
-    quarter_per_second = note_seq.tempos[0].qpm / 60
-    # duration of one bar
-    # bar = note_seq.time_signatures[0].numerator * quarter_per_second
-    bar = 4 * quarter_per_second
-    # duration of the given number of bars
-    return bar * n_bars
+    '''
+    This is adapted from google Magenta Hierarchical DataConverter
+    https://github.com/magenta/magenta/blob/81514d0107362f00825d0a0e36a1314e34c314ad/magenta/models/music_vae/data_hierarchical.py
+    '''
+    steps_per_quarter = 24
+    quarters_per_bar = 4
+    steps_per_bar = steps_per_quarter * quarters_per_bar
+
+    if note_seq.tempos:
+        quarters_per_minute = note_seq.tempos[0].qpm
+    else:
+        quarters_per_minute = note_seq.DEFAULT_QUARTERS_PER_MINUTE
+
+    quarters_per_bar = steps_per_bar / steps_per_quarter
+    hop_size_quarters = quarters_per_bar * n_bars
+    hop_size_seconds = 60.0 * hop_size_quarters / quarters_per_minute
+
+    return hop_size_seconds
