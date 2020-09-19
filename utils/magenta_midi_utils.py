@@ -31,15 +31,15 @@ def save_midi(sequences: Union[NoteSequence, List[NoteSequence]],
         Otherwise a new file is created that overwrites the existing one.
         :param prefix: an optional prefix for each file
     """
-    if len(sequences) != len(output_names):
-        raise ValueError("The list of output_names has to be same size as the list of sequences.")
 
     consts = get_constants_dict()
 
-    output_dir = Path(output_dir) if output_dir else Path(consts["DATA_DIR"])
+    output_dir = Path(output_dir) if output_dir else Path(consts["DATA_PATH"])
     Path.mkdir(output_dir, parents=True, exist_ok=True)
     if not isinstance(sequences, list):
         sequences = [sequences]
+    if output_names and len(sequences) != len(output_names):
+        raise ValueError("The list of output_names has to be same size as the list of sequences.")
     for (index, sequence) in enumerate(sequences):
         date_and_time = time.strftime("%Y-%m-%d_%H%M%S")
         if output_names:
